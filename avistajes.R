@@ -3,7 +3,8 @@ guess_encoding("planilla_base_huemul.csv")
 datos <- read.csv("planilla_base_huemul.csv", header = T,
                   sep = "," , dec = ",")
 
-datos <- as_tibble(datos)
+datos <- as_tibble(datos) %>% 
+  filter(!is.na(Latitud))
 
 library(sf)
 library(tmap)
@@ -38,20 +39,27 @@ mapa <- tm_shape(pnlg_kml)+
   tm_shape(datos.sf)+
   tm_dots()
 
+mapa_yr_2 <- tm_shape(pnlg_kml)+
+  tm_polygons(col = "lightgray")+
+  tm_shape(datos.sf)+
+  tm_dots(col = "darkred")+
+  tm_facets(by = "y", free.coords = F)
+
 datos.sf.yr <- datos.sf %>% 
-  group_by(a.o) %>%
+  group_by(y) %>%
   summarise(
     n = n()
   ) %>% 
   ungroup()
 
+pnlg_kml_crop <- st_crop(pnlg_kml,bbox_new)
+
 mapa_yr <- tm_shape(pnlg_kml_crop)+
   tm_polygons(col = "white")+
   tm_shape(datos.sf.yr)+
   tm_dots(size = "n")+
-  tm_facets(by = "a.o", free.coords = F)
+  tm_facets(by = "y", free.coords = F)
 
-pnlg_kml_crop <- st_crop(pnlg_kml,bbox_new)
 
 
 # transectas --------------------------------------------------------------
